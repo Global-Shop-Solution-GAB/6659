@@ -1,0 +1,317 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.frmSFTP..Create(BaseForm)
+Gui.frmSFTP..Caption("SFTP Credentials Maintenance: Paycom")
+Gui.frmSFTP..Size(7170,3390)
+Gui.frmSFTP..MinX(0)
+Gui.frmSFTP..MinY(0)
+Gui.frmSFTP..Position(0,0)
+Gui.frmSFTP..AlwaysOnTop(False)
+Gui.frmSFTP..FontName("Tahoma")
+Gui.frmSFTP..FontSize(8.25)
+Gui.frmSFTP..ControlBox(True)
+Gui.frmSFTP..MaxButton(True)
+Gui.frmSFTP..MinButton(True)
+Gui.frmSFTP..MousePointer(0)
+Gui.frmSFTP..Moveable(True)
+Gui.frmSFTP..Sizeable(True)
+Gui.frmSFTP..ShowInTaskBar(True)
+Gui.frmSFTP..TitleBar(True)
+Gui.frmSFTP..Event(UnLoad,frmSFTP_UnLoad)
+Gui.frmSFTP.txtRemoteHost.Create(TextBox,"",True,3180,300,0,1590,240,True,0,"Tahoma",8.25,,1)
+Gui.frmSFTP.lblUser.Create(Label,"User:",True,390,195,0,195,720,True,0,"Tahoma",8.25,,0,0)
+Gui.frmSFTP.lblUser.BorderStyle(0)
+Gui.frmSFTP.txtUser.Create(TextBox,"",True,3180,300,0,1590,660,True,0,"Tahoma",8.25,,1)
+Gui.frmSFTP.txtPassword.Create(TextBox,"",True,3180,300,0,1590,1080,True,0,"Tahoma",8.25,,1)
+Gui.frmSFTP.lblRemotePort.Create(Label,"Remote Port:",True,960,195,0,195,1980,True,0,"Tahoma",8.25,,0,0)
+Gui.frmSFTP.lblRemotePort.BorderStyle(0)
+Gui.frmSFTP.txtRemotePort.Create(TextBox,"",True,3180,300,0,1590,1920,True,0,"Tahoma",8.25,,1)
+Gui.frmSFTP.lblRemotePath.Create(Label,"Remote Path: ",True,1035,195,0,195,1560,True,0,"Tahoma",8.25,,0,0)
+Gui.frmSFTP.lblRemotePath.BorderStyle(0)
+Gui.frmSFTP.txtRemotePath.Create(TextBox,"",True,3180,300,0,1590,1500,True,0,"Tahoma",8.25,,1)
+Gui.frmSFTP.cmdTstCon.Create(Button)
+Gui.frmSFTP.cmdTstCon.Enabled(True)
+Gui.frmSFTP.cmdTstCon.Visible(True)
+Gui.frmSFTP.cmdTstCon.Zorder(0)
+Gui.frmSFTP.cmdTstCon.Size(1665,375)
+Gui.frmSFTP.cmdTstCon.Position(5115,810)
+Gui.frmSFTP.cmdTstCon.Caption("Test Connection")
+Gui.frmSFTP.cmdTstCon.FontName("Tahoma")
+Gui.frmSFTP.cmdTstCon.FontSize(8.25)
+Gui.frmSFTP.cmdTstCon.Event(Click,cmdTstCon_Click)
+Gui.frmSFTP.lblPassword.Create(Label,"Password:",True,750,195,0,195,1140,True,0,"Tahoma",8.25,,0,0)
+Gui.frmSFTP.lblPassword.BorderStyle(0)
+Gui.frmSFTP.cmdSaveSettings.Create(Button)
+Gui.frmSFTP.cmdSaveSettings.Enabled(True)
+Gui.frmSFTP.cmdSaveSettings.Visible(True)
+Gui.frmSFTP.cmdSaveSettings.Zorder(0)
+Gui.frmSFTP.cmdSaveSettings.Size(1665,375)
+Gui.frmSFTP.cmdSaveSettings.Position(5115,1650)
+Gui.frmSFTP.cmdSaveSettings.Caption("Save Settings")
+Gui.frmSFTP.cmdSaveSettings.FontName("Tahoma")
+Gui.frmSFTP.cmdSaveSettings.FontSize(8.25)
+Gui.frmSFTP.cmdSaveSettings.Event(Click,cmdSaveSettings_Click)
+Gui.frmSFTP.lblRemoteHost.Create(Label,"Remote Host:",True,990,195,0,195,300,True,0,"Tahoma",8.25,,0,0)
+Gui.frmSFTP.lblRemoteHost.BorderStyle(0)
+Gui.frmSFTP.lblUserError.Create(Label,"User ID For Errors",True,1305,195,0,195,2460,True,0,"Tahoma",8.25,,0,0)
+Gui.frmSFTP.lblUserError.BorderStyle(0)
+Gui.frmSFTP.lblUserError.DefaultValue("")
+Gui.frmSFTP.txtIDError.Create(TextBox,"",True,3180,300,0,1590,2385,True,0,"Tahoma",8.25,,1)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.bConOpen.Declare(Boolean, False)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Brandon Medina 
+'Customer: Real Performance Machinery 
+'Quote: 13413
+'Desc: Project will receive a csv file from paycom with info to update/maintain the employee master file in GSS that work on jobs
+
+F.Intrinsic.Control.Try
+
+	F.Intrinsic.Control.CallSub(loadSettings) 
+	Gui.frmSFTP..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+V.Local.sError.Declare
+
+F.Intrinsic.Control.If(V.Global.bConOpen)
+	F.ODBC.Connection!con.Close
+F.Intrinsic.Control.EndIf	
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCG_6659_SFTP_Cred_Maint.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+Program.Sub.loadSettings.Start
+F.Intrinsic.Control.Try
+	V.Local.bExists.Declare
+	V.Local.sSQL.Declare
+	V.Local.baValue.Declare(ByteArray)
+	V.Local.sTemp.Declare(String)
+	
+	'REMOTEHOST, REMOTEUSER, REMOTEPASSWORD, REMOTEPORT, REMOTEPATH
+	'Check Table exists and create if not 
+	F.ODBC.Connection!con.OpenCommonConnection
+	V.Global.bConOpen.Set(True)
+	F.ODBC.Connection!con.TableExists("GCG_6659_SETTINGS", V.Local.bExists)
+	F.Intrinsic.Control.If(V.Local.bExists.Not)
+		F.ODBC.Connection!con.Execute("create table GCG_6659_SETTINGS (REMOTEHOST CHAR(60), REMOTEUSER CHAR(50), REMOTEPASSWORD CHAR(50), REMOTEPORT CHAR(10), REMOTEPATH CHAR(90), USER_ID_ERROR CHAR(15));")
+	F.Intrinsic.Control.EndIf
+	
+	'Grab credential records from db table, and set screen txt controls 
+	F.Data.DataTable.CreateFromSQL("dtSFTPSettings", "con", "select * from GCG_6659_SETTINGS")
+	F.ODBC.Connection!con.Close
+	V.Global.bConOpen.Set(False)
+	
+	F.Intrinsic.Control.If(V.DataTable.dtSFTPSettings.RowCount, =, 0)
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.ElseIf(V.DataTable.dtSFTPSettings.RowCount, >, 1)
+		F.Intrinsic.UI.Msgbox("Multiple Settings found. Please contact Global Shop for assistance.")
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+'Function.Intrinsic.Debug.InvokeDebugger
+'Function.Intrinsic.Debug.Stop
+
+	V.Local.sTemp.Set(V.DataTable.dtSFTPSettings(0).REMOTEHOST!FieldValTrim)
+	F.Intrinsic.String.ConvertString2BA(V.DataTable.dtSFTPSettings(0).REMOTEHOST!FieldValTrim, V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue, V.Local.sTemp)
+	'F.Global.Encryption.Decrypt(V.DataTable.dtSFTPSettings(0).REMOTEHOST!FieldVal, V.Local.sTemp)
+	Gui.frmSFTP.txtRemoteHost.Text(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.DataTable.dtSFTPSettings(0).REMOTEUSER!FieldValTrim)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp, V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue, V.Local.sTemp)
+'	Gui.frmSFTP.txtUser.Text(V.Local.sTemp)
+	'F.Global.Encryption.Decrypt(V.DataTable.dtSFTPSettings(0).REMOTEUSER!FieldVal, V.Local.sTemp)
+	Gui.frmSFTP.txtUser.Text(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.DataTable.dtSFTPSettings(0).REMOTEPASSWORD!FieldValTrim)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp, V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue, V.Local.sTemp)
+'	Gui.frmSFTP.txtPassword.Text(V.Local.sTemp)
+'	F.Global.Encryption.Decrypt(V.DataTable.dtSFTPSettings(0).REMOTEPASSWORD!FieldVal, V.Local.sTemp)
+	Gui.frmSFTP.txtPassword.Text(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.DataTable.dtSFTPSettings(0).REMOTEPORT!FieldValTrim)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp, V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue, V.Local.sTemp)
+'	Gui.frmSFTP.txtRemotePort.Text(V.Local.sTemp)
+'	F.Global.Encryption.Decrypt(V.DataTable.dtSFTPSettings(0).REMOTEPORT!FieldVal, V.Local.sTemp)
+	Gui.frmSFTP.txtRemotePort.Text(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.DataTable.dtSFTPSettings(0).REMOTEPATH!FieldValTrim)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp, V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue, V.Local.sTemp)
+'	Gui.frmSFTP.txtRemotePath.Text(V.Local.sTemp)
+'	F.Global.Encryption.Decrypt(V.DataTable.dtSFTPSettings(0).REMOTEPATH!FieldVal, V.Local.sTemp)
+	Gui.frmSFTP.txtRemotePath.Text(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.DataTable.dtSFTPSettings(0).USER_ID_ERROR!FieldValTrim)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp, V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue, V.Local.sTemp)
+	Gui.frmSFTP.txtIDError.Text(V.Local.sTemp)
+	
+	F.Data.DataTable.Close("dtSFTPSettings")
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+F.Intrinsic.Control.EndTry
+Program.Sub.loadSettings.End
+Program.Sub.frmSFTP_UnLoad.Start
+F.Intrinsic.Control.Try
+	F.Intrinsic.Control.End
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+F.Intrinsic.Control.EndTry
+Program.Sub.frmSFTP_UnLoad.End
+Program.Sub.cmdTstCon_Click.Start
+F.Intrinsic.Control.Try
+	V.Local.sRemoteHost.Declare
+	V.Local.sRemoteUser.Declare
+	V.Local.sRemotePassword.Declare
+	V.Local.sRemotePort.Declare
+	V.Local.sRemotePath.Declare
+	V.Local.sSQL.Declare
+	
+	'Set variables 
+	V.Local.sRemoteHost.Set(V.Screen.frmSFTP!txtRemoteHost.Text)
+	V.Local.sRemoteUser.Set(V.Screen.frmSFTP!txtUser.Text)
+	V.Local.sRemotePassword.Set(V.Screen.frmSFTP!txtPassword.Text)
+	V.Local.sRemotePort.Set(V.Screen.frmSFTP!txtRemotePort.Text)
+	V.Local.sRemotePath.Set(V.Screen.frmSFTP!txtRemotePath.Text)
+	'
+	F.Intrinsic.Control.Try
+		'Credentials 
+		
+		F.Communication.SFTP.SetProperty("SSHAcceptServerAuthentication","true")
+		F.Communication.SFTP.SetProperty("remoteHost", V.Local.sRemoteHost.Trim)
+		F.Communication.SFTP.SetProperty("User", V.Local.sRemoteUser.Trim)
+		F.Communication.SFTP.SetProperty("Password", V.Local.sRemotePassword.Trim)
+		F.Communication.SFTP.SetProperty("remotePort", V.Local.sRemotePort.Trim)
+		F.Communication.SFTP.Logon
+		F.Communication.SFTP.SetProperty("RemotePath", V.Local.sRemotePath)
+	
+		'F.Communication.SFTP.ListDirectory()
+		F.Intrinsic.UI.Msgbox("Successful")
+		
+		F.Communication.SFTP.Logoff
+		
+	F.Intrinsic.Control.Catch
+		F.Communication.SFTP.Logoff
+		F.Intrinsic.UI.Msgbox("Connection Failed")
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndTry
+	
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdTstCon_Click.End
+Program.Sub.cmdSaveSettings_Click.Start
+F.Intrinsic.Control.Try
+	V.Local.sTemp.Declare(String)
+	V.Local.sRemoteHost.Declare
+	V.Local.sRemoteUser.Declare
+	V.Local.sRemotePassword.Declare
+	V.Local.sRemotePort.Declare
+	V.Local.sRemotePath.Declare
+	V.Local.sUserIDError.Declare
+	V.Local.sSQL.Declare
+	V.Local.sWeek.Declare
+	V.Local.sMonth.Declare
+	V.Local.iSize.Declare
+	V.Local.baValue.Declare(ByteArray)
+	
+	
+	'Save screen credentials to variables
+	V.Local.sTemp.Set(V.Screen.frmSFTP!txtRemoteHost.Text)
+	F.Intrinsic.Control.If(V.Local.sTemp.Trim,<>,"")
+		F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+		F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+		F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+		F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	F.Intrinsic.Control.EndIf
+	V.Local.sRemoteHost.Set(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.Screen.frmSFTP!txtUser.Text)
+	F.Intrinsic.Control.If(V.Local.sTemp.Trim,<>,"")
+		F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+		F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+		F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+		F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	F.Intrinsic.Control.EndIf
+	V.Local.sRemoteUser.Set(V.Local.sTemp)
+
+	V.Local.sTemp.Set(V.Screen.frmSFTP!txtPassword.Text)
+	F.Intrinsic.Control.If(V.Local.sTemp.Trim,<>,"")
+		F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+		F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+		F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+		F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	F.Intrinsic.Control.EndIf
+	V.Local.sRemotePassword.Set(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.Screen.frmSFTP!txtRemotePort.Text)
+	F.Intrinsic.Control.If(V.Local.sTemp.Trim,<>,"")
+		F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+		F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+		F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+		F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	F.Intrinsic.Control.EndIf
+	V.Local.sRemotePort.Set(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.Screen.frmSFTP!txtRemotePath.Text)
+	F.Intrinsic.Control.If(V.Local.sTemp.Trim,<>,"")
+		F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+		F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+		F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+		F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	F.Intrinsic.Control.EndIf
+	V.Local.sRemotePath.Set(V.Local.sTemp)
+	
+	V.Local.sTemp.Set(V.Screen.frmSFTP!txtIDError.Text)
+	F.Intrinsic.Control.If(V.Local.sTemp.Trim,<>,"")
+		F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+		F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+		F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+		F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	F.Intrinsic.Control.EndIf
+	V.Local.sUserIDError.Set(V.Local.sTemp)
+	
+	F.ODBC.Connection!con.OpenCommonConnection
+	V.Global.bConOpen.Set(True)
+	F.Data.DataTable.CreateFromSQL("dtSFTPSettings", "con", "select * from GCG_6659_SETTINGS")
+	
+	F.Intrinsic.Control.If(V.DataTable.dtSFTPSettings.RowCount, <>, 0)
+		F.ODBC.Connection!con.Execute("delete from GCG_6659_SETTINGS")
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("insert into GCG_6659_SETTINGS (REMOTEHOST, REMOTEUSER, REMOTEPASSWORD, REMOTEPORT, REMOTEPATH, USER_ID_ERROR) values ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')", V.Local.sRemoteHost, V.Local.sRemoteUser, V.Local.sRemotePassword, V.Local.sRemotePort, V.Local.sRemotePath, V.Local.sUserIDError, V.Local.sSQL)
+	F.ODBC.Connection!con.Execute(V.Local.sSQL)
+	
+	F.Data.DataTable.Close("dtSFTPSettings")
+	F.ODBC.Connection!con.Close
+	V.Global.bConOpen.Set(False)
+	
+	F.Intrinsic.UI.Msgbox("Save Complete")
+	
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, V.Ambient.CurrentSubroutine)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdSaveSettings_Click.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bmedina$}$20220411203828583$}$kOipCrsyLBVj2KoSwkcdK23ChxGVcBlEwmHmP2NDT4ik92Q5XANp3b60YcbUPY2++ZwI0qmJNbs=
+Program.Sub.Comments.End
